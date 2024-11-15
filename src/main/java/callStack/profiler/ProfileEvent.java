@@ -15,10 +15,8 @@
  */
 package callStack.profiler;
 
+import callStack.utils.DurationUtils;
 import org.apache.commons.lang3.Validate;
-import org.joda.time.Period;
-import org.joda.time.format.PeriodFormatter;
-import org.joda.time.format.PeriodFormatterBuilder;
 
 import java.io.Serializable;
 import java.text.NumberFormat;
@@ -32,13 +30,13 @@ import java.util.stream.Collectors;
 import static org.apache.commons.lang3.Validate.notNull;
 
 public class ProfileEvent implements Serializable {
-    static final long serialVersionUID = 1l;
+    private static final long serialVersionUID = 1L;
 
     long runtimeInMillis = 0;
     int numOfInvocations = 0;
     String name;
 
-    // interal use only please
+    // internal use only please
     long start = -1;
     // these are display only
     boolean isConcurrent = false;
@@ -59,7 +57,7 @@ public class ProfileEvent implements Serializable {
         notNull(child.getName());
 
         if (childrenAsMap == null) {
-            childrenAsMap = new ConcurrentHashMap<String, ProfileEvent>();
+            childrenAsMap = new ConcurrentHashMap<>();
         }
         childrenAsMap.put(child.getName(), child);
         child.setParent(this);
@@ -81,9 +79,7 @@ public class ProfileEvent implements Serializable {
     }
 
     public void startEvent() {
-        if (start != -1) {
-            Validate.isTrue(start == -1, "Can not start event twice. Event [" + name + "] has already been started");
-        }
+        Validate.isTrue(start == -1, "Can not start event twice. Event [" + name + "] has already been started");
 
         start = System.currentTimeMillis();
     }
@@ -117,7 +113,7 @@ public class ProfileEvent implements Serializable {
             preBuilder.append("||");
         }
         preBuilder.append("|");
-        res.append(preBuilder.toString());
+        res.append(preBuilder);
 
         res.append("-> ");
         res.append(node.getName());
@@ -126,7 +122,7 @@ public class ProfileEvent implements Serializable {
         res.append(") : ");
         addRuntime(res, node.getRuntimeInMillis());
 
-        boolean hasChildren = node != null && !isEmpty(node.getChildrenAsMap());
+        boolean hasChildren = !isEmpty(node.getChildrenAsMap());
         if (hasChildren) {
             handleUnaccountedTime(res, node);
         }
@@ -146,44 +142,27 @@ public class ProfileEvent implements Serializable {
         Collection<ProfileEvent> values = node.getChildrenAsMap().values();
 
         long childrenSum = 0;
-        List<ProfileEvent> syncEvents = values.stream().filter(p-> !isConcurrent(p)).collect(Collectors.toList());
-        if(!syncEvents.isEmpty()){
+        List<ProfileEvent> syncEvents = values.stream().filter(p -> !isConcurrent(p)).collect(Collectors.toList());
+        if (!syncEvents.isEmpty()) {
             childrenSum += syncEvents.stream().mapToLong(ProfileEvent::getRuntimeInMillis).sum();
         }
-        List<ProfileEvent> asyncEvents = values.stream().filter(p-> isConcurrent(p)).collect(Collectors.toList());
-        if(!asyncEvents.isEmpty()){
+        List<ProfileEvent> asyncEvents = values.stream().filter(this::isConcurrent).collect(Collectors.toList());
+        if (!asyncEvents.isEmpty()) {
             childrenSum += asyncEvents.stream().mapToLong(ProfileEvent::getRuntimeInMillis).max().getAsLong();
         }
 
         long diff = node.getRuntimeInMillis() - childrenSum;
         res.append(" [");
-        res.append(periodFormatter.print(new Period(diff)));
+        res.append(DurationUtils.formatDuration(diff));
         res.append("]");
     }
-    private boolean isConcurrent(ProfileEvent p){
+
+    private boolean isConcurrent(ProfileEvent p) {
         return p.isRemote() || p.isConcurrent();
     }
 
-    private final static long SECOND = 1000;
-    private final static long MINUTE = 60 * SECOND;
-    private final static long HOUR = 60 * MINUTE;
-
-
-    private static final PeriodFormatter periodFormatter = new PeriodFormatterBuilder()
-            .appendHours()
-            .appendSuffix("h")
-            .appendSeparatorIfFieldsBefore(" ")
-            .appendMinutes()
-            .appendSuffix("m")
-            .appendSeparatorIfFieldsBefore(" ")
-            .appendSeconds()
-            .appendSuffix("s")
-            .appendSeparatorIfFieldsBefore(" ")
-            .appendMillis3Digit()
-            .appendSuffix("ms").toFormatter();
-
     private void addRuntime(StringBuilder res, long runtime) {
-        res.append(periodFormatter.print(new Period(runtime)));
+        res.append(DurationUtils.formatDuration(runtime));
     }
 
     public boolean isEnded() {

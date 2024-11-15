@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -9,7 +9,9 @@
     <version>1.1.7-SNAPSHOT</version>
 
     <name>Call Stack Profiler</name>
-    <description>This profiler keeps track of the method calls and outputs method call hierarchy, allowing developers to quickly comprehend execution time breakdown. Profile your code with negligible performance and memory overhead.</description>
+    <description>This profiler keeps track of the method calls and outputs method call hierarchy, allowing developers to
+        quickly comprehend execution time breakdown. Profile your code with negligible performance and memory overhead.
+    </description>
     <url>https://github.com/NationalSecurityAgency/call-stack-profiler</url>
     <scm>
         <url>https://github.com/NationalSecurityAgency/call-stack-profiler</url>
@@ -46,17 +48,16 @@
     </licenses>
 
     <properties>
-        <groovy.version>3.0.7</groovy.version>
+        <groovy.version>3.0.21</groovy.version>
         <spock.myVersion>2.0-M4-groovy-3.0</spock.myVersion>
 
         <groovy.eclipse.compiler.version>3.6.0-03</groovy.eclipse.compiler.version>
         <!-- This should match groovy.version        -->
-        <groovy.eclipse.batch.version>3.0.7-01</groovy.eclipse.batch.version>
+        <groovy.eclipse.batch.version>3.0.8-01</groovy.eclipse.batch.version>
 
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
-        <commons.lang3.version>3.11</commons.lang3.version>
-        <joda.time.version>2.10.6</joda.time.version>
-        <log4j.version>2.17.2</log4j.version>
+        <commons.lang3.version>3.17.0</commons.lang3.version>
+        <slf4j.version>2.0.16</slf4j.version>
 
         <versions.maven.plugin>2.7</versions.maven.plugin>
         <maven.scm.plugin>1.11.2</maven.scm.plugin>
@@ -83,21 +84,9 @@
             <version>${commons.lang3.version}</version>
         </dependency>
         <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>${joda.time.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-bom</artifactId>
-            <version>${log4j.version}</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j.version}</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
 
         <dependency>
@@ -172,52 +161,12 @@
                 <version>${versions.maven.plugin}</version>
             </plugin>
 
-
-            <!-- shading had number of issues, specifically with shading slf4j, may revisit in the future -->
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-shade-plugin</artifactId>-->
-                <!--<version>3.1.0</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<phase>package</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>shade</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<filters>-->
-                                <!--<filter>-->
-                                    <!--<includes>-->
-                                        <!--<include>org.apache</include>-->
-                                        <!--<include>org.joda</include>-->
-                                    <!--</includes>-->
-                                <!--</filter>-->
-                            <!--</filters>-->
-                            <!--<minimizeJar>true</minimizeJar>-->
-                            <!--<relocations>-->
-                                <!--<relocation>-->
-                                    <!--<pattern>org.apache</pattern>-->
-                                    <!--<shadedPattern>orgShaded.apache</shadedPattern>-->
-                                <!--</relocation>-->
-                                <!--&lt;!&ndash;<relocation>&ndash;&gt;-->
-                                    <!--&lt;!&ndash;<pattern>org.slf4j</pattern>&ndash;&gt;-->
-                                    <!--&lt;!&ndash;<shadedPattern>orgShaded.slf4j</shadedPattern>&ndash;&gt;-->
-                                <!--&lt;!&ndash;</relocation>&ndash;&gt;-->
-                                <!--<relocation>-->
-                                    <!--<pattern>org.joda</pattern>-->
-                                    <!--<shadedPattern>orgShaded.joda</shadedPattern>-->
-                                <!--</relocation>-->
-                            <!--</relocations>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M3</version>
+                <version>3.5.2</version>
                 <configuration>
+                    <showOutput>false</showOutput>
                     <includes>
                         <include>**/*Spec*.java</include>
                         <include>**/*Test.java</include>
@@ -257,7 +206,7 @@
                             <excludedScopes>test,provided</excludedScopes>
 
                             <!-- white list of licenses, build will fail if a 3rd party licences is not found in this list -->
-                            <failIfWarning>true</failIfWarning>
+                            <encoding>UTF-8</encoding>
                             <failOnMissing>true</failOnMissing>
                             <includedLicenses>
                                 <includedLicense>The Apache Software License, Version 2.0</includedLicense>
@@ -269,10 +218,15 @@
                                 <includedLicense>GNU Lesser General Public License</includedLicense>
                             </includedLicenses>
                             <licenseMerges>
-                                <licenseMerge>The Apache Software License, Version 2.0|Apache License, Version 2.0|The Apache License, Version 2.0|The Apache Software License, version 2.0</licenseMerge>
-                                <licenseMerge>Eclipse Public License - Version 1.0|Eclipse Public License 1.0</licenseMerge>
-                                <licenseMerge>Eclipse Public License - Version 2.0|Eclipse Public License v2.0</licenseMerge>
-                                <licenseMerge>The 3-Clause BSD License|New BSD License|BSD Licence 3|BSD License 3</licenseMerge>
+                                <licenseMerge>The Apache Software License, Version 2.0|Apache License, Version 2.0|The
+                                    Apache License, Version 2.0|The Apache Software License, version 2.0
+                                </licenseMerge>
+                                <licenseMerge>Eclipse Public License - Version 1.0|Eclipse Public License 1.0
+                                </licenseMerge>
+                                <licenseMerge>Eclipse Public License - Version 2.0|Eclipse Public License v2.0
+                                </licenseMerge>
+                                <licenseMerge>The 3-Clause BSD License|New BSD License|BSD Licence 3|BSD License 3
+                                </licenseMerge>
                             </licenseMerges>
                         </configuration>
                     </execution>
@@ -363,7 +317,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.0.1</version>
+                        <version>3.2.7</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>

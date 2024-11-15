@@ -17,16 +17,18 @@ package callStack.utils
 
 import callStack.profiler.CProf
 import callStack.profiler.ProfThreadPool
-import callStack.utils.ThreadPoolUtils
+import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 import java.util.concurrent.Future
 
+@Slf4j
 class ProfThreadPoolSpecification extends Specification {
 
 
     String poolName = "pool"
     ProfThreadPool profThreadPool = new ProfThreadPool(poolName, 2, 5)
+
     def setup() {
         CProf.clear()
     }
@@ -48,9 +50,8 @@ class ProfThreadPoolSpecification extends Specification {
         res.contains("2")
         CProf.rootEvent.name == "l1"
         CProf.rootEvent.children.size() == 2
-        CProf.rootEvent.children.collect({it.name}).sort() == ["$poolName-1", "$poolName-2"]
+        CProf.rootEvent.children.collect({ it.name }).sort() == ["$poolName-1", "$poolName-2"]
     }
-
 
 
     def "Thread pool allows to assign unique name to each event"() {
@@ -66,7 +67,7 @@ class ProfThreadPoolSpecification extends Specification {
             ])
         }
 
-        println CProf.prettyPrint()
+        log.debug(CProf.prettyPrint())
 
         then:
         res
@@ -75,7 +76,7 @@ class ProfThreadPoolSpecification extends Specification {
         res.contains("2")
         CProf.rootEvent.name == "l1"
         CProf.rootEvent.children.size() == 2
-        List<String> names = CProf.rootEvent.children.collect({it.name}).sort()
+        List<String> names = CProf.rootEvent.children.collect({ it.name }).sort()
         names.first().startsWith("$poolName-1")
         names.last().startsWith("$poolName-2")
     }
@@ -111,7 +112,6 @@ class ProfThreadPoolSpecification extends Specification {
         res.size() == 2
         res.contains("1")
         res.contains("2")
-//        println CProf.rootEvent.prettyPrint()
         CProf.rootEvent.name == "l1"
         CProf.rootEvent.children.size() == 2
         List<String> names = CProf.rootEvent.children.collect({ it.name }).sort()
@@ -125,13 +125,13 @@ class ProfThreadPoolSpecification extends Specification {
         CProf.prof("l1") {
             CProf.prof("l2") {
                 res = profThreadPool.asyncExec([
-                        ThreadPoolUtils.callable { CProf.prof("l3") { CProf.prof("l4") { CProf.prof("l5") {} } }; return "1" },
+                        ThreadPoolUtils.callable { CProf.prof("l3") { CProf.prof("l4") { CProf.prof("l5") {} } }
+                            return "1" },
                         ThreadPoolUtils.callable { CProf.prof("l3") { CProf.prof("l4") {} }; return "2" }
                 ])
             }
         }
         then:
-//        println CProf.rootEvent.prettyPrint()
         res
         res.size() == 2
         res.contains("1")
@@ -164,7 +164,8 @@ class ProfThreadPoolSpecification extends Specification {
             res.add(futureRes.get())
             res.add(futureRes1.get())
         }
-        println CProf.rootEvent.prettyPrint()
+        log.debug(CProf.rootEvent.prettyPrint())
+
         then:
         res
         res.size() == 2
@@ -178,14 +179,15 @@ class ProfThreadPoolSpecification extends Specification {
         when:
         CProf.prof("l1") {
             CProf.prof("l2") {
-                Future f1 = profThreadPool.submit(ThreadPoolUtils.callable { CProf.prof("l3") { CProf.prof("l4") { CProf.prof("l5") {} } }; return "1" })
-                Future f2 = profThreadPool.submit( ThreadPoolUtils.callable { CProf.prof("l3") { CProf.prof("l4") {} }; return "2" })
+                Future f1 = profThreadPool.submit(ThreadPoolUtils.callable { CProf.prof("l3") { CProf.prof("l4") { CProf.prof("l5") {} } }
+                    return "1" })
+                Future f2 = profThreadPool.submit(ThreadPoolUtils.callable { CProf.prof("l3") { CProf.prof("l4") {} }
+                    return "2" })
                 res.add(f1.get())
                 res.add(f2.get())
             }
         }
         then:
-        println CProf.rootEvent.prettyPrint()
         res
         res.size() == 2
         res.contains("1")
@@ -214,7 +216,7 @@ class ProfThreadPoolSpecification extends Specification {
         List<Future> futures = []
         when:
         (0..4).each {
-            futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each{Thread.sleep(500)} }))
+            futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each { Thread.sleep(500) } }))
         }
 
 
@@ -236,20 +238,20 @@ class ProfThreadPoolSpecification extends Specification {
         ProfThreadPool threadPool = new ProfThreadPool(poolName, 5)
         List<Future> futures = []
         when:
-        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each{Thread.sleep(500)} }))
-        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each{Thread.sleep(500)} }))
-        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each{Thread.sleep(500)} }))
-        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each{Thread.sleep(500)} }))
-        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each{Thread.sleep(500)} }))
-        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each{Thread.sleep(500)} }))
+        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each { Thread.sleep(500) } }))
+        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each { Thread.sleep(500) } }))
+        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each { Thread.sleep(500) } }))
+        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each { Thread.sleep(500) } }))
+        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each { Thread.sleep(500) } }))
+        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each { Thread.sleep(500) } }))
 
         futures.each {
             it.get()
         }
         futures.clear()
 
-        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each{Thread.sleep(500)} }))
-        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each{Thread.sleep(500)} }))
+        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each { Thread.sleep(500) } }))
+        futures.add(threadPool.submit(ThreadPoolUtils.callable { (0..2).each { Thread.sleep(500) } }))
         futures.each {
             it.get()
         }

@@ -15,29 +15,11 @@
  */
 package callStack.profiler
 
-import callStack.profiler.ProfileEvent
 import spock.lang.Specification
 
-class ProfileEventSpecification extends Specification{
-//    def "Must be able to Kryo serDer"(){
-//
-//        ProfileEvent child1 = new ProfileEvent(name: "test", runtimeInMillis: 10)
-//        ProfileEvent child2 = new ProfileEvent(name: "test", runtimeInMillis: 10)
-//        ProfileEvent event = new ProfileEvent(name: "test", runtimeInMillis: 10)
-//        event.addChild(child1)
-//        event.addChild(child2)
-//
-//        ProfileEvent res
-//        when:
-//        byte [] ser = KryoSerializer.instance.serialize(event)
-//        res = KryoSerializer.instance.deserialize(ser)
-//
-//        then:
-//        res
-//        res.name == event.name
-//    }
+class ProfileEventSpecification extends Specification {
 
-    def "toString call with hierarchy should not throw exceptions :) "(){
+    def "toString call with hierarchy should not throw exceptions :) "() {
         ProfileEvent child1 = new ProfileEvent(name: "test", runtimeInMillis: 10)
         ProfileEvent child2 = new ProfileEvent(name: "test", runtimeInMillis: 10)
         ProfileEvent event = new ProfileEvent(name: "test", runtimeInMillis: 10)
@@ -53,21 +35,21 @@ class ProfileEventSpecification extends Specification{
 
     def "Pretty print long running events - 1,000 ms"() {
         expect:
-        profileEvent.prettyPrint() ==  result
+        profileEvent.prettyPrint() == result
 
         where:
-        profileEvent			| result
-        new ProfileEvent(name: "p", runtimeInMillis: 1000, numOfInvocations: 1)	                | "|-> p (1) : 1s "
-        new ProfileEvent(name: "p", runtimeInMillis: 10*1000, numOfInvocations: 1)	            | "|-> p (1) : 10s "
-        new ProfileEvent(name: "p", runtimeInMillis: 29999, numOfInvocations: 1)	            | "|-> p (1) : 29s 999ms"
-        new ProfileEvent(name: "p", runtimeInMillis: 30*1000, numOfInvocations: 1)	            | "|-> p (1) : 30s "
-        new ProfileEvent(name: "p", runtimeInMillis: 60*1000 + 1000, numOfInvocations: 1)	    | "|-> p (1) : 1m 1s "
-        new ProfileEvent(name: "p", runtimeInMillis: 59*60*1000 + 59*1000, numOfInvocations: 1)	| "|-> p (1) : 59m 59s "
-        new ProfileEvent(name: "p", runtimeInMillis: 62*60*1000 + 59*1000, numOfInvocations: 1)	| "|-> p (1) : 1h 2m 59s "
-        new ProfileEvent(name: "p", runtimeInMillis: 143*60*1000 + 199, numOfInvocations: 1)    | "|-> p (1) : 2h 23m 199ms"
+        profileEvent                                                                                  | result
+        new ProfileEvent(name: "p", runtimeInMillis: 1000, numOfInvocations: 1)                       | "|-> p (1) : 1s "
+        new ProfileEvent(name: "p", runtimeInMillis: 10 * 1000, numOfInvocations: 1)                  | "|-> p (1) : 10s "
+        new ProfileEvent(name: "p", runtimeInMillis: 29999, numOfInvocations: 1)                      | "|-> p (1) : 29s 999ms"
+        new ProfileEvent(name: "p", runtimeInMillis: 30 * 1000, numOfInvocations: 1)                  | "|-> p (1) : 30s "
+        new ProfileEvent(name: "p", runtimeInMillis: 60 * 1000 + 1000, numOfInvocations: 1)           | "|-> p (1) : 1m 1s "
+        new ProfileEvent(name: "p", runtimeInMillis: 59 * 60 * 1000 + 59 * 1000, numOfInvocations: 1) | "|-> p (1) : 59m 59s "
+        new ProfileEvent(name: "p", runtimeInMillis: 62 * 60 * 1000 + 59 * 1000, numOfInvocations: 1) | "|-> p (1) : 1h 2m 59s "
+        new ProfileEvent(name: "p", runtimeInMillis: 143 * 60 * 1000 + 199, numOfInvocations: 1)      | "|-> p (1) : 2h 23m 199ms"
     }
 
-    def "serialize should not throw exceptions :) "(){
+    def "serialize should not throw exceptions :) "() {
         ProfileEvent child1 = new ProfileEvent(name: "child1", runtimeInMillis: 10)
         ProfileEvent child2 = new ProfileEvent(name: "child2", runtimeInMillis: 10)
         ProfileEvent event = new ProfileEvent(name: "test", runtimeInMillis: 10)

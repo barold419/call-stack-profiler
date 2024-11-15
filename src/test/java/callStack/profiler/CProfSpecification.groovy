@@ -15,19 +15,14 @@
  */
 package callStack.profiler
 
-import callStack.profiler.CProf
-import callStack.profiler.Profile
-import callStack.profiler.ProfileEvent
 import org.apache.commons.lang3.time.StopWatch
 import spock.lang.Specification
 
 class CProfSpecification extends Specification {
 
-
     def setup() {
         CProf.clear()
     }
-
 
     class C1 {
         C2 c2 = new C2()
@@ -89,6 +84,7 @@ class CProfSpecification extends Specification {
             m2("blah")
 
         }
+
         @Profile
         void m2(String s) {
 
@@ -136,7 +132,6 @@ class CProfSpecification extends Specification {
         CProf.turnTreeProfilingOff.set(false)
         then:
         CProf.rootEvent.name == "callC2"
-//        println CProf.prettyPrint()
     }
 
     def "Test Simple Hierarchy Profiling - tree profiling disabled"() {
@@ -150,7 +145,6 @@ class CProfSpecification extends Specification {
         then:
         CProf.rootEvent.name == "root"
         CProf.rootEvent.children.size() == 0
-//        println CProf.prettyPrint()
     }
 
 
@@ -172,7 +166,6 @@ class CProfSpecification extends Specification {
         ProfileEvent event
         when:
         c4.m()
-//        println CProf.prettyPrint()
         then:
         CProf.rootEvent.name == "root"
         CProf.rootEvent.runtimeInMillis >= 300
@@ -198,7 +191,6 @@ class CProfSpecification extends Specification {
         ProfileEvent event
         when:
         c5.m()
-//        println CProf.prettyPrint()
         then:
         CProf.rootEvent.name == "root"
         CProf.rootEvent.runtimeInMillis >= 300
@@ -247,9 +239,9 @@ class CProfSpecification extends Specification {
                 }
             }
         }
+
         then:
         CProf.prettyPrint()
-//        println CProf.prettyPrint()
     }
 
 
@@ -266,10 +258,8 @@ class CProfSpecification extends Specification {
         }
         watch.stop()
 
-//        println watch.time
-//        println CProf.prettyPrint()
         then:
-        watch.time < 1000
+        watch.duration.toMillis() < 1000
     }
 
     def "Pretty print large numbers"() {
@@ -338,10 +328,11 @@ class CProfSpecification extends Specification {
     def "Call stack profiler should properly propagate exceptions"() {
 
         when:
-        CProf.prof("with exception"){
+        CProf.prof("with exception") {
             throw new IllegalArgumentException("fail")
         }
-        then: thrown (IllegalArgumentException)
+        then:
+        thrown(IllegalArgumentException)
 
     }
 
@@ -373,12 +364,12 @@ class CProfSpecification extends Specification {
 
     }
 
-    def "ability to preserve root ProfileEvent object for later utilization"(){
+    def "ability to preserve root ProfileEvent object for later utilization"() {
         List<ProfileEvent> events = []
 
         when:
         2.times {
-            CProf.prof("prof"){
+            CProf.prof("prof") {
                 Thread.sleep(50)
             }
             events.add(CProf.rootEvent)

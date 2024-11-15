@@ -29,14 +29,14 @@ public class CachedThreadPool extends AbstractThreadPool {
 	public CachedThreadPool(final String name, int minNumOfThreads, int maxNumOfThreads) {
 		m_pool = new ThreadPoolExecutor(minNumOfThreads, maxNumOfThreads,
 				60L, TimeUnit.SECONDS,
-				new LinkedBlockingQueue<Runnable>(),
+                new LinkedBlockingQueue<>(),
 				new NamedThreadFactory(name));
 	}
 
 	public CachedThreadPool(final String name, int minNumOfThreads, int maxNumOfThreads, int queueCapacity) {
 		m_pool = new ThreadPoolExecutor(minNumOfThreads, maxNumOfThreads,
 				60L, TimeUnit.SECONDS,
-				new LinkedBlockingQueue<Runnable>(queueCapacity),
+                new LinkedBlockingQueue<>(queueCapacity),
 				new NamedThreadFactory(name));
 	}
 }

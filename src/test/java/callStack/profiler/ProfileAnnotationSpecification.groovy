@@ -15,11 +15,10 @@
  */
 package callStack.profiler
 
-import callStack.profiler.CProf
-import callStack.profiler.Profile
+import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
-
+@Slf4j
 class ProfileAnnotationSpecification extends Specification {
     class C1 {
         @Profile
@@ -29,15 +28,16 @@ class ProfileAnnotationSpecification extends Specification {
         }
 
         @Profile
-        void willThrow(){
+        void willThrow() {
             new C2().willThrow()
         }
 
         @Profile
-        void willThrowAsWell(){
+        void willThrowAsWell() {
             new C2().willThrowAsWell()
         }
     }
+
     class C2 {
         @Profile
         void m2() {
@@ -45,12 +45,12 @@ class ProfileAnnotationSpecification extends Specification {
         }
 
         @Profile
-        void willThrow(){
+        void willThrow() {
             new C3().m4()
         }
 
         @Profile
-        void willThrowAsWell(){
+        void willThrowAsWell() {
             new C3().willThrowAsWell()
         }
     }
@@ -98,13 +98,12 @@ class ProfileAnnotationSpecification extends Specification {
                 }
                 return "groupBy"
             } catch (Throwable throwable) {
-//                throwable.printStackTrace()
                 throw throwable
             }
         }
     }
 
-    class WithAttr{
+    class WithAttr {
         String attr
     }
 
@@ -127,7 +126,9 @@ class ProfileAnnotationSpecification extends Specification {
         try {
             res = new C3().m4()
             fail "should never get here"
-        } catch (Exception e) { thrownE = e}
+        } catch (Exception e) {
+            thrownE = e
+        }
         then:
         CProf.rootEvent
         CProf.rootEvent.name == "ProfileAnnotationSpecification\$C3.m4"
@@ -145,7 +146,9 @@ class ProfileAnnotationSpecification extends Specification {
         try {
             res = new C1().willThrow()
             fail "should never get here"
-        } catch (Exception e) { thrownE = e}
+        } catch (Exception e) {
+            thrownE = e
+        }
         then:
         CProf.rootEvent
         CProf.rootEvent.name == "ProfileAnnotationSpecification\$C1.willThrow"
@@ -158,24 +161,19 @@ class ProfileAnnotationSpecification extends Specification {
 
     def "Nested odd exception does NOT stop profiling from completing"() {
         String res
-        Exception thrownE
+
         when:
         try {
             res = new C1().willThrowAsWell()
             fail "should never get here"
-        } catch (Exception e) { thrownE = e}
+        } catch (Exception e) {
+            log.info('', e)
+        }
 
-        thrownE.printStackTrace()
+        log.debug(CProf.prettyPrint())
 
-        println CProf.prettyPrint()
         then:
-//        CProf.rootEvent
-//        CProf.rootEvent.name == "ProfileAnnotationSpecification\$C1.willThrow"
-//        CProf.rootEvent.runtimeInMillis >= 200
-//        CProf.rootEvent.ended
         !res
-//        thrownE instanceof IllegalArgumentException
-//        thrownE.message == "aljaljfljaljf"
     }
 
 
@@ -251,6 +249,7 @@ class ProfileAnnotationSpecification extends Specification {
 
     class C7 {
         boolean b = true
+
         @Profile
         void callMethod() {
             dontAggregate()
@@ -267,7 +266,7 @@ class ProfileAnnotationSpecification extends Specification {
     def "Allow each call to be a separate profile event"() {
         when:
         new C7().callMethod()
-//        println CProf.rootEvent.prettyPrint()
+
         then:
         CProf.rootEvent
         CProf.rootEvent.name == "ProfileAnnotationSpecification\$C7.callMethod"

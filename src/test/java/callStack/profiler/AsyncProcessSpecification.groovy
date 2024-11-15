@@ -15,21 +15,22 @@
  */
 package callStack.profiler
 
-import callStack.profiler.AsyncProcess
+import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-
-class AsyncProcessSpecification extends Specification{
+@Slf4j
+class AsyncProcessSpecification extends Specification {
 
     AsyncProcess asyncProcess
-    void cleanup(){
+
+    void cleanup() {
         asyncProcess.stop()
     }
 
-    def "Able to async process closure code"(){
+    def "Able to async process closure code"() {
         AtomicInteger count = new AtomicInteger()
 
         asyncProcess = new AsyncProcess()
@@ -58,14 +59,16 @@ class AsyncProcessSpecification extends Specification{
         }
     }
 
-    def "Async code may throw exceptions"(){
+    def "Async code may throw exceptions"() {
         AtomicInteger count = new AtomicInteger()
 
         asyncProcess = new AsyncProcess()
         asyncProcess.start()
         when:
         asyncProcess.async {
-            if(true){throw new IllegalArgumentException("fail")}
+            if (true) {
+                throw new IllegalArgumentException("fail")
+            }
             count.andIncrement
         }
         asyncProcess.async {
@@ -80,7 +83,7 @@ class AsyncProcessSpecification extends Specification{
         count.get() == 2
     }
 
-    def "Execute real slow closure"(){
+    def "Execute real slow closure"() {
         AtomicInteger count = new AtomicInteger(0)
 
         asyncProcess = new AsyncProcess()
@@ -92,7 +95,7 @@ class AsyncProcessSpecification extends Specification{
             count.getAndIncrement()
         }
 
-        long diff = System.currentTimeMillis()-start
+        long diff = System.currentTimeMillis() - start
         int num = 0
         while (count.get() != 1 && num < 10) {
             Thread.sleep(1000)
@@ -104,9 +107,9 @@ class AsyncProcessSpecification extends Specification{
     }
 
 
-    def "throw an exception if async queue is full"(){
+    def "throw an exception if async queue is full"() {
 
-        asyncProcess = new AsyncProcess(queueSize:2)
+        asyncProcess = new AsyncProcess(queueSize: 2)
         asyncProcess.start()
 
         asyncProcess.async { Thread.sleep(50000) }
@@ -117,8 +120,8 @@ class AsyncProcessSpecification extends Specification{
         try {
             asyncProcess.async { Thread.sleep(50000) }
             asyncProcess.async { Thread.sleep(50000) }
-        } catch (IllegalStateException e){
-            e.printStackTrace()
+        } catch (IllegalStateException e) {
+            log.error('', e)
             t = e
         }
 
@@ -128,10 +131,10 @@ class AsyncProcessSpecification extends Specification{
     }
 
 
-    def "support drop-if-full option"(){
+    def "support drop-if-full option"() {
         AtomicInteger count = new AtomicInteger(0)
 
-        asyncProcess = new AsyncProcess(queueSize:1, dropIfFull:true)
+        asyncProcess = new AsyncProcess(queueSize: 1, dropIfFull: true)
         asyncProcess.start()
 
         int numAttempts = 100
@@ -146,7 +149,7 @@ class AsyncProcessSpecification extends Specification{
         TimeUnit.SECONDS.sleep(5)
         then:
         count.get().intValue() < numAttempts
-        res.findAll ( { it.equals(false) }).size() > 0
+        res.findAll({ it.equals(false) }).size() > 0
     }
 
 }
